@@ -12,7 +12,7 @@ app.use(cors());
 app.get("/test", async (req: Request, res: Response) => {
   res.json({ message: "Hello" });
 });
-// an
+
 app.listen(4000, () => {
   console.log("listening to port 4000");
 });
