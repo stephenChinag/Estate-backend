@@ -8,7 +8,7 @@ app.use(express.json());
 
 app.use(cors());
 
-// test route
+// test route on that
 app.get("/test", async (req: Request, res: Response) => {
   res.json({ message: "Hello" });
 });
