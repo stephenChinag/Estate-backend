@@ -7,6 +7,8 @@ const app = express();
 app.use(express.json());
 
 app.use(cors());
+
+// test route
 app.get("/test", async (req: Request, res: Response) => {
   res.json({ message: "Hello" });
 });
