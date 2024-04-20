@@ -1,6 +1,12 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import "dotenv/config";
+import mongoose from "mongoose";
+
+//setting connection string
+mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string).then(() => {
+  console.log("Connected to database");
+});
 
 const app = express();
 
@@ -13,6 +19,7 @@ app.get("/test", async (req: Request, res: Response) => {
   res.json({ message: "Hello" });
 });
 
-app.listen(4000, () => {
-  console.log("listening to port 4000");
+app.listen(7000, () => {
+  console.log("listening to port 7000");
 });
+//
