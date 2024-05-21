@@ -5,10 +5,9 @@ import mongoose from "mongoose";
 import authRouter from "./router/auth";
 import postRouter from "./router/post";
 
-dotenv.config();
-
 const app = express();
 
+dotenv.config();
 // Middleware to parse JSON bodies
 app.use(express.json());
 
@@ -18,10 +17,16 @@ app.use(cors());
 // Connect to MongoDB
 
 // Mount routers
-app.use("/auth", authRouter);
-app.use("/posts", postRouter);
+app.use(authRouter);
+app.use(postRouter);
 
 const PORT = process.env.PORT || 7000;
-app.listen(PORT, () => {
-  console.log(`Listening to port ${PORT}`);
-});
+
+mongoose
+  .connect(process.env.MONGODB_CONNECTION_STRING as string)
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Listening to port ${PORT}`);
+    });
+  })
+  .catch((err) => console.log(err));

@@ -1,13 +1,14 @@
 import { Request, Response } from "express";
 
-export const signup = (req: Request, res: Response): void => {
-  res.json({ message: "Register" });
+export const registerConroller = (req: Request, res: Response): void => {
+  const { username, email, password } = req.body;
+  console.log(req.body);
 };
 
-export const login = (req: Request, res: Response): void => {
+export const loginController = (req: Request, res: Response): void => {
   res.json({ message: "Login" });
 };
 
-export const logout = (req: Request, res: Response): void => {
+export const logoutController = (req: Request, res: Response): void => {
   res.json({ message: "LogOut" });
 };

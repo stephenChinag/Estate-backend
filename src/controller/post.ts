@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 export const createPost = (req: Request, res: Response) => {
-  res.json({ message: "it works" });
+  console.log(req.body);
 };
 
 export const getAllPost = (req: Request, res: Response) => {
