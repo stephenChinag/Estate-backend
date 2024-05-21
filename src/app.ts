@@ -17,16 +17,11 @@ app.use(cors());
 // Connect to MongoDB
 
 // Mount routers
-app.use(authRouter);
+app.use("/api/auth", authRouter);
 app.use(postRouter);
 
 const PORT = process.env.PORT || 7000;
 
-mongoose
-  .connect(process.env.MONGODB_CONNECTION_STRING as string)
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Listening to port ${PORT}`);
-    });
-  })
-  .catch((err) => console.log(err));
+app.listen(PORT, () => {
+  console.log(`Listening to port ${PORT}`);
+});

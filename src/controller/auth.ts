@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
+import bcrypt from "bcrypt";
 
-export const registerConroller = (req: Request, res: Response): void => {
+export const registerController = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
-  console.log(req.body);
+  const hashedPassword = await bcrypt.hash(password, 10);
+  console.log(username, email, password);
+  console.log(hashedPassword);
 };
 
 export const loginController = (req: Request, res: Response): void => {
