@@ -59,6 +59,8 @@ export const loginController = async (req: Request, res: Response) => {
     if (!passwordMatch) {
       res.status(401).json({ message: "IncorrectPassword" });
     }
+
+    res.setHeader("Set-Cookie", "test=" + "myValue").json("Success");
     const token = Jwt.sign(
       { userId: user._id, email: user.email },
       "your_secret_key",
