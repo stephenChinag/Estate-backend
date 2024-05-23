@@ -22,6 +22,9 @@ app.use(postRouter);
 
 const PORT = process.env.PORT || 7000;
 
-app.listen(PORT, () => {
-  console.log(`Listening to port ${PORT}`);
+mongoose.connect(process.env.DATABASE_URL as string).then(() => {
+  console.log("connected... to database");
+  app.listen(PORT, () => {
+    console.log(`Listening to port ${PORT}`);
+  });
 });
