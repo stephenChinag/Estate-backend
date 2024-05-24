@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import authRouter from "./router/auth";
@@ -11,6 +12,9 @@ dotenv.config();
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Middleware to parse Cookies
+
+app.use(cookieParser());
 // Middleware to enable CORS
 app.use(cors());
 

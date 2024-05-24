@@ -60,7 +60,6 @@ export const loginController = async (req: Request, res: Response) => {
       res.status(401).json({ message: "IncorrectPassword" });
     }
 
-    res.setHeader("Set-Cookie", "test=" + "myValue").json("Success");
     const token = Jwt.sign(
       { userId: user._id, email: user.email },
       "your_secret_key",
@@ -68,8 +67,14 @@ export const loginController = async (req: Request, res: Response) => {
     );
     // CHECK IF THE PASSWORD MATCH
     // GENERATE COOKIE TOKEN AND SEND TO THE USER
-
-    res.status(200).json({ message: "Login succesfully", token });
+    // res.setHeader("Set-Cookie", "test=" + "myValue");
+    res
+      .cookie("test2", "myValue2", {
+        httpOnly: true,
+        // secure:true
+      })
+      .status(200)
+      .json({ message: "Login succesfully", token });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Login failed" });
