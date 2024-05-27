@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.use(cookieParser());
 // Middleware to enable CORS
-app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL as string, credentials: true }));
 
 // Connect to MongoDB
 

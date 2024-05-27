@@ -60,16 +60,16 @@ export const loginController = async (req: Request, res: Response) => {
       res.status(401).json({ message: "IncorrectPassword" });
     }
 
+    const age = 1000 * 60 * 60;
+
     const token = Jwt.sign(
       { userId: user._id, email: user.email },
-      "your_secret_key",
-      { expiresIn: "1h" } // Token expires in 1 hour
+      process.env.JWT_SECRET_KEY as string,
+      { expiresIn: age }
     );
-    // CHECK IF THE PASSWORD MATCH
-    // GENERATE COOKIE TOKEN AND SEND TO THE USER
-    // res.setHeader("Set-Cookie", "test=" + "myValue");
+
     res
-      .cookie("test2", "myValue2", {
+      .cookie("token", token, {
         httpOnly: true,
         // secure:true
       })
@@ -82,5 +82,5 @@ export const loginController = async (req: Request, res: Response) => {
 };
 
 export const logoutController = (req: Request, res: Response): void => {
-  res.json({ message: "LogOut" });
+  res.clearCookie("token").status(200).json({ message: "logout succesfull" });
 };
