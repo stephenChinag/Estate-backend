@@ -47,39 +47,82 @@ export const registerController = async (req: Request, res: Response) => {
 
 export const loginController = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  let user;
+
   try {
-    // IF A USER EXIST
-    user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "incorrect email or password" });
+    // Find user by email
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(404).json({ message: "User does not exist" });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      res.status(401).json({ message: "IncorrectPassword" });
+    // Verify password
+    const isValidPassword = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
+    if (!isValidPassword) {
+      return res.status(401).json({ message: "Invalid password" });
     }
 
-    const age = 1000 * 60 * 60;
-
+    // Create JWT token
     const token = Jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: existingUser.id, email: existingUser.email, isAdmin: false },
       process.env.JWT_SECRET_KEY as string,
-      { expiresIn: age }
+      { expiresIn: "1h" }
     );
 
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        // secure:true
-      })
-      .status(200)
-      .json({ message: "Login succesfully", token });
+    // Set HTTP-only cookie with the token
+    res.cookie("token", token, {
+      httpOnly: true,
+      // Other cookie options (e.g., secure, domain, etc.) can be added here
+    });
+
+    // Return user info and token
+    res.json({
+      userId: existingUser.id,
+      username: existingUser.username,
+      email: existingUser.email,
+      token: token,
+    });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ message: "Login failed" });
   }
 };
+
+// try {
+//   // IF A USER EXIST
+//   existingUser = await User.findOne({ email });
+//   if (!user) {
+//     return res.status(401).json({ message: "incorrect email or password" });
+//   }
+
+//   const passwordMatch = await bcrypt.compare(password, user.password);
+//   if (!passwordMatch) {
+//     res.status(401).json({ message: "IncorrectPassword" });
+//   }
+
+//   const age = 1000 * 60 * 60;
+
+//   const token = Jwt.sign(
+//     { userId: user._id, email: user.email },
+//     process.env.JWT_SECRET_KEY as string,
+//     { expiresIn: age }
+//   );
+
+//   const { password: userPassword, ...userInfo } = user;
+
+//   res
+//     .cookie("token", token, {
+//       httpOnly: true,
+//       // secure:true
+//     })
+//     .status(200)
+//     .json(userInfo);
+// } catch (err) {
+//   console.log(err);
+//   res.status(500).json({ message: "Login failed" });
+// }
 
 export const logoutController = (req: Request, res: Response): void => {
   res.clearCookie("token").status(200).json({ message: "logout succesfull" });

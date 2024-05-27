@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import authRouter from "./router/auth";
 import postRouter from "./router/post";
+import testRoute from "./router/test";
 
 const app = express();
 
@@ -12,16 +13,15 @@ dotenv.config();
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Middleware to parse Cookies
-
-app.use(cookieParser());
 // Middleware to enable CORS
 app.use(cors({ origin: process.env.CLIENT_URL as string, credentials: true }));
 
-// Connect to MongoDB
+// Middleware to parse Cookies
+app.use(cookieParser());
 
 // Mount routers
 app.use("/api/auth", authRouter);
+app.use("/api/test", testRoute);
 app.use(postRouter);
 
 const PORT = process.env.PORT || 7000;
