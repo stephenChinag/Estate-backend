@@ -66,7 +66,7 @@ export const loginController = async (req: Request, res: Response) => {
 
     // Create JWT token
     const token = Jwt.sign(
-      { userId: existingUser.id, email: existingUser.email, isAdmin: false },
+      { userId: existingUser.id, email: existingUser.email, isAdmin: true },
       process.env.JWT_SECRET_KEY as string,
       { expiresIn: "1h" }
     );
@@ -89,40 +89,6 @@ export const loginController = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Login failed" });
   }
 };
-
-// try {
-//   // IF A USER EXIST
-//   existingUser = await User.findOne({ email });
-//   if (!user) {
-//     return res.status(401).json({ message: "incorrect email or password" });
-//   }
-
-//   const passwordMatch = await bcrypt.compare(password, user.password);
-//   if (!passwordMatch) {
-//     res.status(401).json({ message: "IncorrectPassword" });
-//   }
-
-//   const age = 1000 * 60 * 60;
-
-//   const token = Jwt.sign(
-//     { userId: user._id, email: user.email },
-//     process.env.JWT_SECRET_KEY as string,
-//     { expiresIn: age }
-//   );
-
-//   const { password: userPassword, ...userInfo } = user;
-
-//   res
-//     .cookie("token", token, {
-//       httpOnly: true,
-//       // secure:true
-//     })
-//     .status(200)
-//     .json(userInfo);
-// } catch (err) {
-//   console.log(err);
-//   res.status(500).json({ message: "Login failed" });
-// }
 
 export const logoutController = (req: Request, res: Response): void => {
   res.clearCookie("token").status(200).json({ message: "logout succesfull" });
