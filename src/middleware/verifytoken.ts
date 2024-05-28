@@ -1,6 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import Jwt from "jsonwebtoken";
 
+declare global {
+  namespace Express {
+    interface Request {
+      userId: string;
+    }
+  }
+}
+
 export const verifyToken = (
   req: Request,
   res: Response,
