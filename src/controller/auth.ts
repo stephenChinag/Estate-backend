@@ -4,7 +4,7 @@ import User, { UserDocument } from "../model/user";
 import Jwt from "jsonwebtoken";
 
 export const registerController = async (req: Request, res: Response) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, avatar } = req.body;
 
   let existingUser;
 
@@ -18,6 +18,7 @@ export const registerController = async (req: Request, res: Response) => {
     const newUser: UserDocument = new User({
       username,
       email,
+      avatar,
       password: hashedPassword,
     });
 
@@ -82,6 +83,7 @@ export const loginController = async (req: Request, res: Response) => {
       userId: existingUser.id,
       username: existingUser.username,
       email: existingUser.email,
+      avatar: existingUser.avatar,
       token: token,
     });
   } catch (err) {
