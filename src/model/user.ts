@@ -9,10 +9,14 @@ export interface UserDocument extends Document {
   createdAt: Date;
 }
 const userSchema = new Schema<UserDocument>({
+  _id: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
+  },
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true, minlength: 6 },
-  avatar: { type: String, required: true },
+  avatar: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 
