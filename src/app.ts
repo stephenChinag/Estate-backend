@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import authRouter from "./router/auth";
 import postRouter from "./router/post";
 import testRoute from "./router/test";
+import userRoute from "./router/user";
 
 const app = express();
 
@@ -21,7 +22,9 @@ app.use(cookieParser());
 
 // Mount routers
 app.use("/api/auth", authRouter);
+app.use("/api/user", userRoute);
 app.use("/api/test", testRoute);
+
 app.use(postRouter);
 
 const PORT = process.env.PORT || 7000;

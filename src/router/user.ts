@@ -1,9 +1,12 @@
 import express from "express";
+import { getUsers, getUser, updateUser, deleteUser } from "../controller/user";
+import { verifyToken } from "../middleware/verifytoken";
+
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  console.log("GET REQUEST ALL USER");
-  res.json({ message: "all users are found" });
-});
+router.get("/", getUsers);
+router.get("/:id", verifyToken, getUser);
+router.put("/:id", verifyToken, updateUser);
+router.post("/:id", verifyToken, deleteUser);
 
-module.exports = router;
+export default router;
