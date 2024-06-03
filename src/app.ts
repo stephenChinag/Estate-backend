@@ -22,7 +22,7 @@ app.use(cookieParser());
 
 // Mount routers
 app.use("/api/auth", authRouter);
-app.use("/api/user", userRoute);
+app.use("/api/users", userRoute);
 app.use("/api/test", testRoute);
 
 app.use(postRouter);
