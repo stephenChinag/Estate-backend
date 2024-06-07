@@ -13,8 +13,9 @@ export const getPosts = async (req: Request, res: Response) => {
 
 // Get a single post by ID
 export const getPost = async (req: Request, res: Response) => {
+  const id = req.params.id;
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(id);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
@@ -26,6 +27,8 @@ export const getPost = async (req: Request, res: Response) => {
 
 // Add a new post
 export const addPost = async (req: Request, res: Response) => {
+  const tokenUserId = req.userId;
+
   const {
     title,
     img,
@@ -50,7 +53,7 @@ export const addPost = async (req: Request, res: Response) => {
     longitude,
     type,
     property,
-    userId,
+    userId: tokenUserId,
   });
 
   try {
@@ -78,11 +81,20 @@ export const updatePost = async (req: Request, res: Response) => {
 
 // Delete a post
 export const deletePost = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const tokenUserId = req.userId;
   try {
-    const deletedPost = await Post.findByIdAndDelete(req.params.id);
-    if (!deletedPost) {
-      return res.status(404).json({ message: "Post not found" });
+    const post = await Post.findById(id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not Found" });
     }
+
+    if (post.userId.toString() !== tokenUserId) {
+      return res.status(403).json({ message: "Unautorized action" });
+    }
+
+    await Post.findByIdAndDelete(id);
     res.status(200).json({ message: "Post deleted" });
   } catch (error: any) {
     res.status(500).json({ message: error.message });

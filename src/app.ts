@@ -23,9 +23,8 @@ app.use(cookieParser());
 // Mount routers
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRoute);
+app.use("/api/posts", postRouter);
 app.use("/api/test", testRoute);
-
-app.use(postRouter);
 
 const PORT = process.env.PORT || 7000;
 
