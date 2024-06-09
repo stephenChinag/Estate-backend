@@ -31,15 +31,17 @@ export const addPost = async (req: Request, res: Response) => {
 
   const {
     title,
+    price,
     img,
+    address,
+    city,
     bedroom,
     bathroom,
-    price,
-    address,
-    latitude,
-    longitude,
     type,
     property,
+    latitude,
+    longitude,
+
     userId,
   } = req.body;
   const newPost = new Post({
@@ -48,6 +50,7 @@ export const addPost = async (req: Request, res: Response) => {
     bedroom,
     bathroom,
     price,
+    city,
     address,
     latitude,
     longitude,
@@ -83,6 +86,12 @@ export const updatePost = async (req: Request, res: Response) => {
 export const deletePost = async (req: Request, res: Response) => {
   const id = req.params.id;
   const tokenUserId = req.userId;
+
+  // Validate the ObjectId
+  if (!Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid post ID format" });
+  }
+
   try {
     const post = await Post.findById(id);
 
@@ -91,7 +100,7 @@ export const deletePost = async (req: Request, res: Response) => {
     }
 
     if (post.userId.toString() !== tokenUserId) {
-      return res.status(403).json({ message: "Unautorized action" });
+      return res.status(403).json({ message: "Unauthorized action" });
     }
 
     await Post.findByIdAndDelete(id);
