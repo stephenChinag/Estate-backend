@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import Post from "../model/post"; // Assuming the Post model is in models/post.ts
+import { Types } from "mongoose";
+import PostDetail from "../model/postdetails";
 
 // Get all posts
 export const getPosts = async (req: Request, res: Response) => {
@@ -26,7 +28,7 @@ export const getPost = async (req: Request, res: Response) => {
 };
 
 // Add a new post
-export const addPost = async (req: Request, res: Response) => {
+export const addPost = async (req: Request, res: Response): Promise<void> => {
   const tokenUserId = req.userId;
 
   const {
@@ -41,9 +43,16 @@ export const addPost = async (req: Request, res: Response) => {
     property,
     latitude,
     longitude,
-
-    userId,
+    postDetail, // Expecting postDetail as an object
   } = req.body;
+
+  // Create a new PostDetail instance if postDetail is provided
+  let newPostDetail;
+  if (postDetail) {
+    newPostDetail = new PostDetail(postDetail);
+  }
+
+  // Create a new Post instance
   const newPost = new Post({
     title,
     img,
@@ -57,16 +66,24 @@ export const addPost = async (req: Request, res: Response) => {
     type,
     property,
     userId: tokenUserId,
+    postDetail: newPostDetail?._id, // Reference to PostDetail document's ObjectId
   });
 
   try {
+    // Save the post detail first if it exists
+    if (newPostDetail) {
+      await newPostDetail.save();
+    }
+
+    // Save the main post
     const savedPost = await newPost.save();
+
     res.status(201).json(savedPost);
   } catch (error: any) {
-    res.status(400).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Failed to create post" });
   }
 };
-
 // Update an existing post
 export const updatePost = async (req: Request, res: Response) => {
   try {
@@ -96,7 +113,7 @@ export const deletePost = async (req: Request, res: Response) => {
     const post = await Post.findById(id);
 
     if (!post) {
-      return res.status(404).json({ message: "Post not Found" });
+      return res.status(404).json({ message: "Post not found" });
     }
 
     if (post.userId.toString() !== tokenUserId) {
