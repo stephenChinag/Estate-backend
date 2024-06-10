@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Post from "../model/post"; // Assuming the Post model is in models/post.ts
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import PostDetail from "../model/postdetails";
 
 // Get all posts
@@ -34,54 +34,94 @@ export const addPost = async (req: Request, res: Response): Promise<void> => {
   const {
     title,
     price,
-    img,
+    images,
     address,
     city,
     bedroom,
     bathroom,
-    type,
-    property,
     latitude,
     longitude,
-    postDetail, // Expecting postDetail as an object
+    type,
+    property,
+    postDetail,
   } = req.body;
 
-  // Create a new PostDetail instance if postDetail is provided
-  let newPostDetail;
-  if (postDetail) {
-    newPostDetail = new PostDetail(postDetail);
+  // Validate required fields
+  if (
+    !title ||
+    !price ||
+    !images ||
+    !address ||
+    !city ||
+    !bedroom ||
+    !bathroom ||
+    !latitude ||
+    !longitude ||
+    !type ||
+    !property
+  ) {
+    res.status(400).json({ message: "All fields are required" });
+    return;
   }
 
-  // Create a new Post instance
-  const newPost = new Post({
-    title,
-    img,
-    bedroom,
-    bathroom,
-    price,
-    city,
-    address,
-    latitude,
-    longitude,
-    type,
-    property,
-    userId: tokenUserId,
-    postDetail: newPostDetail?._id, // Reference to PostDetail document's ObjectId
-  });
+  // Start a session to ensure atomic operations
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
   try {
-    // Save the post detail first if it exists
-    if (newPostDetail) {
-      await newPostDetail.save();
-    }
+    // Create a new Post instance
+    const newPost = new Post({
+      title,
+      price,
+      images,
+      address,
+      city,
+      bedroom,
+      bathroom,
+      latitude,
+      longitude,
+      type,
+      property,
+      userId: tokenUserId,
+    });
 
     // Save the main post
-    const savedPost = await newPost.save();
+    const savedPost = await newPost.save({ session });
 
-    res.status(201).json(savedPost);
+    // If postDetail is provided, create a new PostDetail instance
+    if (postDetail) {
+      const newPostDetail = new PostDetail({
+        ...postDetail,
+        postId: savedPost._id, // Set the postId to the saved post's _id
+      });
+      await newPostDetail.save({ session });
+
+      // Update the post with the postDetail reference
+      savedPost.postDetail = newPostDetail._id;
+      await savedPost.save({ session });
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    // Populate the postDetail field in the savedPost
+    const populatedPost = await Post.findById(savedPost._id)
+      .populate("postDetail")
+      .exec();
+
+    res.status(201).json(populatedPost);
   } catch (error: any) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to create post" });
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error creating post:", error.message);
+    if (error.errors) {
+      for (const key in error.errors) {
+        console.error(`${key}: ${error.errors[key].message}`);
+      }
+    }
+    res
+      .status(500)
+      .json({ message: "Failed to create post", error: error.message });
   }
 };
 // Update an existing post

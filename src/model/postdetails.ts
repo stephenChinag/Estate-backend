@@ -1,8 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-// Define the interface for the PostDetail document
 export interface IPostDetail extends Document {
-  _id: mongoose.Types.ObjectId;
   desc: string;
   utilities?: string | null;
   pet?: string | null;
@@ -14,7 +12,6 @@ export interface IPostDetail extends Document {
   postId: mongoose.Types.ObjectId;
 }
 
-// Create the PostDetail schema
 const PostDetailSchema: Schema<IPostDetail> = new Schema(
   {
     desc: { type: String, required: true },
@@ -25,7 +22,12 @@ const PostDetailSchema: Schema<IPostDetail> = new Schema(
     school: { type: Number, default: null },
     bus: { type: Number, default: null },
     restaurant: { type: Number, default: null },
-    postId: { type: Schema.Types.ObjectId, required: true, ref: "Post" },
+    postId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "Post",
+      unique: true,
+    },
   },
   {
     toObject: { virtuals: true },
@@ -33,12 +35,10 @@ const PostDetailSchema: Schema<IPostDetail> = new Schema(
   }
 );
 
-// Create a virtual field "id" that maps to "_id"
 PostDetailSchema.virtual("id").get(function (this: IPostDetail) {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialized.
 PostDetailSchema.set("toJSON", { virtuals: true });
 PostDetailSchema.set("toObject", { virtuals: true });
 

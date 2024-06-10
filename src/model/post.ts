@@ -1,43 +1,55 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { IPostDetail } from "./postdetails";
 
-import PostDetail, { IPostDetail } from "./postdetails";
+export enum Type {
+  BUY = "buy",
+  RENT = "rent",
+}
 
-interface IPost extends Document {
+export enum Property {
+  APARTMENT = "apartment",
+  HOUSE = "house",
+  CONDO = "condo",
+  LAND = "land",
+}
+
+export interface IPost extends Document {
   title: string;
   price: number;
-  img: string;
+  images: string[];
   address: string;
   city: string;
   bedroom: number;
   bathroom: number;
-  type: string;
-  property: string;
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
+  type: Type;
+  property: Property;
+  createdAt: Date;
   userId: mongoose.Types.ObjectId;
-  postDetail?: IPostDetail; // Optional, because it might not be present
+  postDetail?: IPostDetail;
 }
 
-// Create the Post schema
 const PostSchema: Schema<IPost> = new Schema(
   {
     title: { type: String, required: true },
     price: { type: Number, required: true },
-    img: { type: String, required: true },
+    images: { type: [String], required: true },
     address: { type: String, required: true },
     city: { type: String, required: true },
     bedroom: { type: Number, required: true },
     bathroom: { type: Number, required: true },
-    type: { type: String, required: true },
-    property: { type: String, required: true },
-    latitude: { type: Number, required: true },
-    longitude: { type: Number, required: true },
+    latitude: { type: String, required: true },
+    longitude: { type: String, required: true },
+    type: { type: String, enum: Object.values(Type), required: true },
+    property: { type: String, enum: Object.values(Property), required: true },
+    createdAt: { type: Date, default: Date.now },
     userId: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     postDetail: {
       type: Schema.Types.ObjectId,
       ref: "PostDetail",
       default: null,
-    }, // Reference to PostDetail
+    },
   },
   {
     toObject: { virtuals: true },
@@ -45,12 +57,10 @@ const PostSchema: Schema<IPost> = new Schema(
   }
 );
 
-// Create a virtual field "id" that maps to "_id"
 PostSchema.virtual("id").get(function (this: IPost) {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialized.
 PostSchema.set("toJSON", { virtuals: true });
 PostSchema.set("toObject", { virtuals: true });
 
