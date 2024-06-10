@@ -4,15 +4,20 @@ import mongoose, { Types } from "mongoose";
 import PostDetail from "../model/postdetails";
 
 // Get all posts
-export const getPosts = async (req: Request, res: Response) => {
+export const getAllPosts = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const posts = await Post.find();
+    const posts: any = await Post.find().populate("postDetail").exec();
     res.status(200).json(posts);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    console.error("Error fetching posts:", error.message);
+    res
+      .status(500)
+      .json({ message: "Failed to fetch posts", error: error.message });
   }
 };
-
 // Get a single post by ID
 export const getPost = async (req: Request, res: Response) => {
   const id = req.params.id;
