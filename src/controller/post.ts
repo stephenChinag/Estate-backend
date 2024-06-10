@@ -2,14 +2,14 @@ import { Request, Response } from "express";
 import Post from "../model/post"; // Assuming the Post model is in models/post.ts
 import mongoose, { Types } from "mongoose";
 import PostDetail from "../model/postdetails";
-
+import User from "../model/user";
 // Get all posts
 export const getAllPosts = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const posts: any = await Post.find().populate("postDetail").exec();
+    const posts = await Post.find().select("-postDetail").exec();
     res.status(200).json(posts);
   } catch (error: any) {
     console.error("Error fetching posts:", error.message);
@@ -22,7 +22,14 @@ export const getAllPosts = async (
 export const getPost = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
-    const post = await Post.findById(id);
+    const post = await Post.findById(id)
+      .populate({
+        path: "userId",
+        model: User, // Model to use for population
+        select: "name email username avatar", // Adjust as per your User model fields
+      })
+      .populate("postDetail")
+      .exec();
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
