@@ -29,8 +29,8 @@ app.use("/api/test", testRoute);
 const PORT = process.env.PORT || 7000;
 
 mongoose.connect(process.env.DATABASE_URL as string).then(() => {
-  console.log("connected... to database");
+  console.log("connecting...");
   app.listen(PORT, () => {
-    console.log(`Listening to port ${PORT}`);
+    console.log(`Listen to port ${PORT}`);
   });
 });
