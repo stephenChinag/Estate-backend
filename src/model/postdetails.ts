@@ -15,13 +15,13 @@ export interface IPostDetail extends Document {
 const PostDetailSchema: Schema<IPostDetail> = new Schema(
   {
     desc: { type: String, required: true },
-    utilities: { type: String, default: null },
-    pet: { type: String, default: null },
-    income: { type: String, default: null },
-    size: { type: Number, default: null },
-    school: { type: Number, default: null },
-    bus: { type: Number, default: null },
-    restaurant: { type: Number, default: null },
+    utilities: { type: String, required: true },
+    pet: { type: String, required: true },
+    income: { type: String, required: true },
+    size: { type: Number, required: true },
+    school: { type: Number, required: true },
+    bus: { type: Number, required: true },
+    restaurant: { type: Number, required: true },
     postId: {
       type: Schema.Types.ObjectId,
       required: true,
