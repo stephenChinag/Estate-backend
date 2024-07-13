@@ -1,7 +1,7 @@
 import express from "express";
 import {
   getPost,
-  getAllPosts,
+  getPosts,
   deletePost,
   addPost,
   updatePost,
@@ -10,7 +10,7 @@ import { verifyToken } from "../middleware/verifytoken";
 
 const router = express.Router();
 
-router.get("/", getAllPosts);
+router.get("/", getPosts);
 router.get("/:id", getPost);
 router.post("/", verifyToken, addPost);
 router.put("/:id", verifyToken, updatePost);

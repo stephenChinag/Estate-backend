@@ -4,20 +4,51 @@ import mongoose, { Types } from "mongoose";
 import PostDetail from "../model/postdetails";
 import User from "../model/user";
 // Get all posts
-export const getAllPosts = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+
+export const getPosts = async (req: Request, res: Response): Promise<void> => {
+  const query = req.query;
+  console.log(query);
   try {
-    const posts = await Post.find().select("-postDetail").exec();
+    let posts;
+
+    // Check if there are any query parameters
+    if (Object.keys(query).length === 0) {
+      // If no query parameters, fetch all posts
+      posts = await Post.find({});
+    } else {
+      // Build case-insensitive queries for city, type, minPrice, and maxPrice fields
+      const cityQuery = query.city
+        ? { $regex: new RegExp(query.city as string, "i") }
+        : undefined;
+      const typeQuery = query.type
+        ? { $regex: new RegExp(query.type as string, "i") }
+        : undefined;
+      const minPriceQuery = query.minPrice
+        ? parseInt(query.minPrice as string)
+        : undefined;
+      const maxPriceQuery = query.maxPrice
+        ? parseInt(query.maxPrice as string)
+        : undefined;
+
+      // Build the final query object
+      const queryObject: any = {};
+      if (cityQuery) queryObject.city = cityQuery;
+      if (typeQuery) queryObject.type = typeQuery;
+      if (minPriceQuery !== undefined)
+        queryObject.price = { ...queryObject.price, $gte: minPriceQuery };
+      if (maxPriceQuery !== undefined)
+        queryObject.price = { ...queryObject.price, $lte: maxPriceQuery };
+
+      posts = await Post.find(queryObject);
+    }
+
     res.status(200).json(posts);
-  } catch (error: any) {
-    console.error("Error fetching posts:", error.message);
-    res
-      .status(500)
-      .json({ message: "Failed to fetch posts", error: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to get posts" });
   }
 };
+
 // Get a single post by ID
 export const getPost = async (req: Request, res: Response) => {
   const id = req.params.id;
@@ -38,104 +69,6 @@ export const getPost = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-// Add a new post
-// export const addPost = async (req: Request, res: Response): Promise<void> => {
-//   const tokenUserId = req.userId;
-
-//   const {
-//     title,
-//     price,
-//     images,
-//     address,
-//     city,
-//     bedroom,
-//     bathroom,
-//     latitude,
-//     longitude,
-//     type,
-//     property,
-//     postDetail,
-//   } = req.body;
-
-//   // Validate required fields
-//   if (
-//     !title ||
-//     !price ||
-//     !images ||
-//     !address ||
-//     !city ||
-//     !bedroom ||
-//     !bathroom ||
-//     !latitude ||
-//     !longitude ||
-//     !type ||
-//     !property
-//   ) {
-//     res.status(400).json({ message: "All fields are required" });
-//     return;
-//   }
-
-//   // Start a session to ensure atomic operations
-//   const session = await mongoose.startSession();
-//   session.startTransaction();
-
-//   try {
-//     // Create a new Post instance
-//     const newPost = new Post({
-//       title,
-//       price,
-//       images,
-//       address,
-//       city,
-//       bedroom,
-//       bathroom,
-//       latitude,
-//       longitude,
-//       type,
-//       property,
-//       userId: tokenUserId,
-//     });
-
-//     // Save the main post
-//     const savedPost = await newPost.save({ session });
-
-//     // If postDetail is provided, create a new PostDetail instance
-//     if (postDetail) {
-//       const newPostDetail = new PostDetail({
-//         ...postDetail,
-//         postId: savedPost._id, // Set the postId to the saved post's _id
-//       });
-//       await newPostDetail.save({ session });
-
-//       // Update the post with the postDetail reference
-//       savedPost.postDetail = newPostDetail._id;
-//       await savedPost.save({ session });
-//     }
-
-//     await session.commitTransaction();
-//     session.endSession();
-
-//     // Populate the postDetail field in the savedPost
-//     const populatedPost = await Post.findById(savedPost._id)
-//       .populate("postDetail")
-//       .exec();
-
-//     res.status(201).json(populatedPost);
-//   } catch (error: any) {
-//     await session.abortTransaction();
-//     session.endSession();
-//     console.error("Error creating post:", error.message);
-//     if (error.errors) {
-//       for (const key in error.errors) {
-//         console.error(`${key}: ${error.errors[key].message}`);
-//       }
-//     }
-//     res
-//       .status(500)
-//       .json({ message: "Failed to create post", error: error.message });
-//   }
-// };
 
 export const addPost = async (req: Request, res: Response): Promise<void> => {
   const { postData, postDetail } = req.body;
@@ -227,3 +160,4 @@ export const deletePost = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+//66929920313ef364baa9f9ae
