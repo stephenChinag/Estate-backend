@@ -3,25 +3,32 @@ import Post from "../model/post"; // Assuming the Post model is in models/post.t
 import mongoose, { Types } from "mongoose";
 import PostDetail from "../model/postdetails";
 import User from "../model/user";
+import SavedPost from "../model/savedPost";
 // Get all posts
 
 export const getPosts = async (req: Request, res: Response): Promise<void> => {
   const query = req.query;
-  console.log(query);
+
   try {
     let posts;
 
     // Check if there are any query parameters
     if (Object.keys(query).length === 0) {
       // If no query parameters, fetch all posts
-      posts = await Post.find({});
+      posts = await Post.find();
     } else {
-      // Build case-insensitive queries for city, type, minPrice, and maxPrice fields
+      // Build case-insensitive queries for city, type, property, bedroom, minPrice, and maxPrice fields
       const cityQuery = query.city
         ? { $regex: new RegExp(query.city as string, "i") }
         : undefined;
       const typeQuery = query.type
         ? { $regex: new RegExp(query.type as string, "i") }
+        : undefined;
+      const propertyQuery = query.property
+        ? { $regex: new RegExp(query.property as string, "i") }
+        : undefined;
+      const bedroomQuery = query.bedroom
+        ? parseInt(query.bedroom as string)
         : undefined;
       const minPriceQuery = query.minPrice
         ? parseInt(query.minPrice as string)
@@ -34,10 +41,21 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
       const queryObject: any = {};
       if (cityQuery) queryObject.city = cityQuery;
       if (typeQuery) queryObject.type = typeQuery;
-      if (minPriceQuery !== undefined)
-        queryObject.price = { ...queryObject.price, $gte: minPriceQuery };
-      if (maxPriceQuery !== undefined)
-        queryObject.price = { ...queryObject.price, $lte: maxPriceQuery };
+      if (propertyQuery) queryObject.property = propertyQuery;
+      if (bedroomQuery !== undefined) queryObject.bedroom = bedroomQuery;
+      if (minPriceQuery !== undefined || maxPriceQuery !== undefined) {
+        queryObject.price = {};
+        if (minPriceQuery !== undefined) queryObject.price.$gte = minPriceQuery;
+        if (maxPriceQuery !== undefined) queryObject.price.$lte = maxPriceQuery;
+      }
+
+      // Special handling for bedroom if provided
+      if (bedroomQuery !== undefined) {
+        queryObject.$or = [
+          { bedroom: { $exists: false } }, // If bedroom field does not exist
+          { bedroom: { $lte: bedroomQuery } }, // If bedroom is less than or equal to the provided value
+        ];
+      }
 
       posts = await Post.find(queryObject);
     }
@@ -161,3 +179,36 @@ export const deletePost = async (req: Request, res: Response) => {
   }
 };
 //66929920313ef364baa9f9ae
+
+// Save Post
+
+export const savePost = async (req: Request, res: Response): Promise<void> => {
+  const { postId } = req.body;
+  const tokenUserId = req.userId;
+
+  if (!postId) {
+    res.status(400).json({ message: "postId is required" });
+    return;
+  }
+
+  try {
+    // Check if the post is already saved
+    const savePost = await SavedPost.findOneAndUpdate({
+      userId: tokenUserId,
+      postId,
+    });
+
+    if (savePost) {
+      await SavedPost.deleteOne({
+        id: savePost.id,
+      });
+    }
+
+    res.status(201).json({ message: "Post saved successfully" });
+  } catch (err: any) {
+    console.error("Error saving post:", err);
+    res
+      .status(500)
+      .json({ message: "Failed to save post", error: err.message });
+  }
+};
