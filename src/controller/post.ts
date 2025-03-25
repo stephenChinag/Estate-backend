@@ -204,6 +204,8 @@ export const savePost = async (req: Request, res: Response): Promise<void> => {
       await SavedPost.deleteOne({
         id: savePost.id,
       });
+
+      res.status(200).json({ messagge: 'Post removed from saved list' });
     }
 
     res.status(201).json({ message: 'Post saved successfully' });
