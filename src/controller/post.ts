@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
-import Post from "../model/post"; // Assuming the Post model is in models/post.ts
-import mongoose, { Types } from "mongoose";
-import PostDetail from "../model/postdetails";
-import User from "../model/user";
-import SavedPost from "../model/savedPost";
+import { Request, Response } from 'express';
+import Post from '../model/post'; // Assuming the Post model is in models/post.ts
+import mongoose, { Types } from 'mongoose';
+import PostDetail from '../model/postdetails';
+import User from '../model/user';
+import SavedPost from '../model/savedPost';
 // Get all posts
 
 export const getPosts = async (req: Request, res: Response): Promise<void> => {
@@ -19,13 +19,13 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
     } else {
       // Build case-insensitive queries for city, type, property, bedroom, minPrice, and maxPrice fields
       const cityQuery = query.city
-        ? { $regex: new RegExp(query.city as string, "i") }
+        ? { $regex: new RegExp(query.city as string, 'i') }
         : undefined;
       const typeQuery = query.type
-        ? { $regex: new RegExp(query.type as string, "i") }
+        ? { $regex: new RegExp(query.type as string, 'i') }
         : undefined;
       const propertyQuery = query.property
-        ? { $regex: new RegExp(query.property as string, "i") }
+        ? { $regex: new RegExp(query.property as string, 'i') }
         : undefined;
       const bedroomQuery = query.bedroom
         ? parseInt(query.bedroom as string)
@@ -59,11 +59,13 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
 
       posts = await Post.find(queryObject);
     }
-
+    // setTimeout(() => {
+    //   res.status(200).json(posts);
+    // }, 3000);
     res.status(200).json(posts);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Failed to get posts" });
+    res.status(500).json({ message: 'Failed to get posts' });
   }
 };
 
@@ -73,14 +75,14 @@ export const getPost = async (req: Request, res: Response) => {
   try {
     const post = await Post.findById(id)
       .populate({
-        path: "userId",
+        path: 'userId',
         model: User, // Model to use for population
-        select: "name email username avatar", // Adjust as per your User model fields
+        select: 'name email username avatar', // Adjust as per your User model fields
       })
-      .populate("postDetail")
+      .populate('postDetail')
       .exec();
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ message: 'Post not found' });
     }
     res.status(200).json(post);
   } catch (error: any) {
@@ -123,17 +125,17 @@ export const addPost = async (req: Request, res: Response): Promise<void> => {
 
     // Populate the postDetail field in the savedPost
     const populatedPost = await Post.findById(savedPost._id)
-      .populate("postDetail")
+      .populate('postDetail')
       .exec();
 
     res.status(201).json(populatedPost);
   } catch (err: any) {
     await session.abortTransaction();
     session.endSession();
-    console.error("Error creating post:", err.message);
+    console.error('Error creating post:', err.message);
     res
       .status(500)
-      .json({ message: "Failed to create post", error: err.message });
+      .json({ message: 'Failed to create post', error: err.message });
   }
 };
 // Update an existing post
@@ -143,7 +145,7 @@ export const updatePost = async (req: Request, res: Response) => {
       new: true,
     });
     if (!updatedPost) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ message: 'Post not found' });
     }
     res.status(200).json(updatedPost);
   } catch (error: any) {
@@ -158,22 +160,22 @@ export const deletePost = async (req: Request, res: Response) => {
 
   // Validate the ObjectId
   if (!Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: "Invalid post ID format" });
+    return res.status(400).json({ message: 'Invalid post ID format' });
   }
 
   try {
     const post = await Post.findById(id);
 
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ message: 'Post not found' });
     }
 
     if (post.userId.toString() !== tokenUserId) {
-      return res.status(403).json({ message: "Unauthorized action" });
+      return res.status(403).json({ message: 'Unauthorized action' });
     }
 
     await Post.findByIdAndDelete(id);
-    res.status(200).json({ message: "Post deleted" });
+    res.status(200).json({ message: 'Post deleted' });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -187,7 +189,7 @@ export const savePost = async (req: Request, res: Response): Promise<void> => {
   const tokenUserId = req.userId;
 
   if (!postId) {
-    res.status(400).json({ message: "postId is required" });
+    res.status(400).json({ message: 'postId is required' });
     return;
   }
 
@@ -204,11 +206,11 @@ export const savePost = async (req: Request, res: Response): Promise<void> => {
       });
     }
 
-    res.status(201).json({ message: "Post saved successfully" });
+    res.status(201).json({ message: 'Post saved successfully' });
   } catch (err: any) {
-    console.error("Error saving post:", err);
+    console.error('Error saving post:', err);
     res
       .status(500)
-      .json({ message: "Failed to save post", error: err.message });
+      .json({ message: 'Failed to save post', error: err.message });
   }
 };
